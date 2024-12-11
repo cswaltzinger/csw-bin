@@ -1,0 +1,11 @@
+#!/bin/bash
+new_args=""
+for arg in "$@"; do
+    if [ -n "$new_args" ];then
+        new_args="$new_args '$arg'"
+    else
+        new_args="'$arg'"
+    fi
+done
+eval "python3 $(dirname $(which pawk))/static/pawk.py $new_args"
+

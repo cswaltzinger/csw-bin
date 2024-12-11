@@ -1,0 +1,14 @@
+from sys import argv as args
+args = args[1:]
+
+{MODULES}
+
+class JSObject:
+    def __init__(self,args={}):
+        self.__dict__ = args 
+    def __getattribute__(self, key ) :
+        try:
+            return object.__getattribute__(self, key)
+        except :
+            return None
+

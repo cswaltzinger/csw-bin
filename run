@@ -1,0 +1,88 @@
+#!/bin/bash
+# c cpp  java py js apps website 
+
+#disern weather it is an app
+
+if [[ "$1" == "--docker" ]]; then
+    shift 
+    DARGS=""
+    while [[ "$1" = *"-"* ]]; do
+        DARGS="$DARGS $1 $2"
+        shift
+        shift 
+    done
+    DIMAGE=$1
+    shift
+
+    docker run -it --rm -v $(pwd):/app -w /app $DARGS $DIMAGE $@
+
+
+
+    exit 0
+fi
+
+
+
+NAME=$1
+if [[ -e "/Applications/$NAME" || -e "/Applications/$NAME.app" ]]; then
+    shift
+    open -a $NAME $@
+    exit 0
+fi
+NAME="$1 $2"
+if [[ -e "/Applications/$NAME" || -e "/Applications/$NAME.app" ]]; then
+    shift
+    shift
+    open -a "$NAME" $@
+    exit 0
+fi
+NAME="$1 $2 $3"
+if [[ -e "/Applications/$NAME" || -e "/Applications/$NAME.app" ]]; then
+    shift
+    shift
+    shift
+    open -a "$NAME" $@
+    exit 0
+fi
+
+FILE="$1"
+
+
+shift 
+
+ARGS=$@
+
+LANG=$(echo $FILE | awk -F'.' '{print $NF}')
+FILENAME=$(echo $FILE | awk -F'.' '{print $1}')
+
+
+makeFromCBase(){
+    COMPILER=$1
+    shift 
+    $COMPILER -Wall -Werror $FILE -o $FILENAME
+
+}
+
+
+case $LANG in
+    "c")
+       makeFromCBase gcc  && ./$FILENAME $ARGS
+        ;;
+    "cpp")
+        makeFromCBase g++  && ./$FILENAME $ARGS
+        ;;
+    "java")
+        javac $FILE && java $FILENAME $ARGS
+        ;;
+    "py")
+        python3 $FILE $ARGS
+        ;;
+    "js")
+        node $FILE $ARGS
+        ;;
+    
+    *)
+        ./$FILENAME $ARGS
+        ;;
+esac
+

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+
+# toggle open for debug 
+open2(){
+    echo open $@
+}
+
+dir="amazon apple gamestop netflix youtube weather"
+ggl="mail meet drive calendar"
+
+
+ALIASED="git https://github.com/
+ser https://csw.server/home
+kahoot https://kahoot.it
+desmos https://www.desmos.com/calculator
+lifelock https://memberportal.lifelock.com
+cal https://calendar.google.com"
+
+ALIAS_DATA=$(echo "$ALIASED" | grep "$@" 2> /dev/null| head -n 1)
+
+getURL(){
+    shift 
+    echo "$@"
+}
+
+
+if [[ -z "$@" ]];then
+    open -a safari
+elif [[ "$1" = "chrome" ]]; then
+    shift 
+    ALIAS_DATA=$(echo "$ALIASED" | grep "$@" 2> /dev/null | head -n 1)
+    if [[ "$ALIAS_DATA" != "" ]] ;then
+        open -a Google\ Chrome $(getURL $ALIAS_DATA)
+    else
+        # open -a Google\ Chrome $@
+        arr=$@
+        open -a Google\ Chrome "https://www.google.com/search?q=${arr// /+}"
+    fi
+   
+elif [[ "$ALIAS_DATA" != "" ]] ;then
+    open $(getURL $ALIAS_DATA)
+elif [[ "$dir" =~ "$@" ]]; then
+    open "http://www.$@.com"
+elif [[ "$ggl" =~ "$@" ]]; then
+    
+    open "http://$@.google.com"
+    
+
+elif [[ "$@" =~ "http" ]];then
+    # open "${@// /+}"
+    open $@
+else
+    ar=$@
+    open "http://www.google.com/search?q=${ar// /+}"
+fi
+

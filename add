@@ -1,0 +1,231 @@
+#!/bin/bash
+#creates and adds predefined files to the current directory/project with modules and imports
+
+DEFAULT_DIR="$(dirname $(which add))/static/defaults"
+FILES="$(ls $DEFAULT_DIR/*)"
+OLD_LANG=""
+LANG=""
+OUTPUT=""
+MODULES=""
+NEW_MODULES=""
+
+MODULE_ALIAS='
+java-arr java.util.ArrayList
+java-hm java.util.HashMap
+java-hs java.util.HashSet
+java-ll java.util.LinkedList
+java-lst java.util.List
+java-list java.util.List
+java-mp java.util.Map
+java-scn java.util.Scanner
+java-f java.io.File
+java-d java.util.Date
+java-df java.text.SimpleDateFormat
+java-r java.util.Random
+java-m java.lang.Math
+java-ex java.lang.Exception
+py-ran random
+py-dt datetime
+py-js json
+py-re re
+py-sub subprocess
+py-ym yaml
+py-m math
+py-mp matplotlib
+py-plt matplotlib.pyplot as plt
+'
+
+transposeModule(){
+    local LANG=$1
+    shift 
+    local MOD="$@"
+     case $LANG in
+        "c")
+            if [[ -f $MOD* ]]; then
+                MOD=$(ls $MOD* | head -n 1)
+                echo "#include \"$MOD\";"
+            else
+                echo "#include <$MOD>;"
+            fi
+            ;;
+        "cpp")
+            if [[ -f $MOD* ]]; then
+                MOD=$(ls $MOD* | head -n 1)
+                echo "#include \"$MOD\";"
+            else
+                echo "#include <$MOD>;"
+            fi
+            ;;
+        "js")
+            echo "const $MOD = require('$MOD');"
+            ;;
+        "py")
+            echo "import $MOD"
+            ;;
+        "java")
+            echo "import $MOD;"
+            ;;
+        "sh")
+            echo "source $MOD"
+            ;;
+        "bash")
+            echo "source $MOD"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
+getarg(){
+    count=$1
+    shift
+    echo $(eval "echo \$$count")
+}
+
+createFile(){
+    local FILE=$1
+
+    local LANG="${FILE##*.}"
+    local NAME="${FILE%%.*}"
+    local NAME=$(basename $NAME)
+
+    if [[ "$FILE" != *"."* ]]; then
+        LANG="bash"
+    fi
+
+    if [[ "Makefile makefile" =~ $NAME ]];then 
+        cat $DEFAULT_DIR/makefile > $FILE 
+        return $?
+    fi
+
+    if [[ -z $OLD_LANG ]]; then
+        OLD_LANG=$LANG
+    fi
+    if [[ $OLD_LANG != $LANG ]]; then
+        
+        MODULES="$NEW_MODULES"
+        OLD_LANG=$LANG
+    fi
+    
+    MOD_STR=""
+    local MOD_PREFIX=""
+    for MOD in $MODULES; do
+        MOD_KEY="$LANG-$MOD"
+        MOD_STR=$(echo "$MODULE_ALIAS" | grep $MOD_KEY|head -n 1)
+        if [[ -z "$MOD_STR" ]]; then
+            MOD_STR="$MOD"
+        else
+            MOD_STR=$(getarg 2 $MOD_STR)
+        fi
+        MOD_PREFIX="$MOD_PREFIX\n$(transposeModule $LANG $MOD_STR)"
+    done
+
+    # cat $DEFAULT_DIR/$LANG | MODULES="$MOD_PREFIX" NAME="$NAME" eval "echo -e $(cat $DEFAULT_DIR/c)"
+    # MODULES="$MOD_PREFIX" NAME="$NAME" eval "echo -e $(cat $DEFAULT_DIR/$LANG)"
+    FILE_CONTENTS=$(cat $DEFAULT_DIR/$LANG)
+    MOD_PREFIX="$MOD_PREFIX\n"
+
+
+    
+PY_CMD="
+lcb=r'{'
+rcb=r'}'
+MODULES=r\"\"\"$(echo -e $MOD_PREFIX)\"\"\"
+NAME=r\"$NAME\"
+FILE=r\"\"\"$FILE_CONTENTS\"\"\" + \"\n\"
+FILE=FILE.replace(r'{MODULES}',MODULES).replace(r'{NAME}',NAME) 
+print(FILE)
+"   
+    python3 -c "$PY_CMD" > $FILE
+    if [ $LANG = "sh" ] || [ $LANG = "bash" ]; then
+        chmod +x $FILE
+    fi
+
+}
+
+
+main(){
+    if [ $ARGLEN -eq 0 ]; then
+        return
+    fi
+    AINDEX=1
+    while [ $AINDEX -lt $ARGLEN ]; do
+        CUR=$(getARG $AINDEX)
+        # if is flag modify fields 
+        VAL=""
+
+        if [[ "$CUR" = "-"* ]]; then
+            if [[ "$CUR" =~ "=" ]]; then
+                VAL="${CUR#*=}"
+                CUR="${CUR%%=*}"
+                # echo "$CUR|$VAL"
+            else 
+                AINDEX=$((AINDEX+1))
+                VAL=$(getARG $AINDEX)
+            fi
+            case $CUR in
+                "-m"|"--modules")
+                    if [[ -z "$VAL" ]]; then
+
+                        MODULES=""
+                    else
+                        NEW_MODULES="$VAL"
+                        MODULES="$MODULES $VAL"
+                    fi
+                    ;;
+                *)
+                    echo "Unknown flag $CUR"
+                    ;;
+            esac
+        else
+            #it is not a flag, it is a file to create 
+            createFile $CUR
+        fi
+        AINDEX=$((AINDEX+1))
+    done
+    
+
+}
+
+
+
+
+printArgs(){
+    echo "ARGLEN=$ARGLEN"
+    for i in $(seq 0 $ARGLEN); do
+        echo "\$$i=$(getARG $i)"
+    done
+}
+
+
+count=1
+CARG=""
+
+ARGS=""
+if [[ ! -z $0 ]];then
+    ARGS="\$0 $0\n"
+fi 
+
+
+ARGLEN=""
+while [[ ! -z $@ ]]; do
+    CARG=$1
+    ARGS=$(echo "$ARGS\n\$$count $CARG")
+    count=$((count+1))
+    ARGLEN=$count
+    shift
+done
+getARG(){
+    ARGNUM=$1
+    shiftOne(){
+        shift
+        echo $@
+    }
+    shiftOne $(echo -e $ARGS | grep "\$$ARGNUM" | head -n 1)
+}
+
+main
+
+
+
