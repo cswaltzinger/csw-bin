@@ -1,4 +1,5 @@
 #!/bin/bash
+#exexutionor for pawk, a python awk like tool
 new_args=""
 for arg in "$@"; do
     if [ -n "$new_args" ];then

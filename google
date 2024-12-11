@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# quickly google search from terminal
 
 # toggle open for debug 
 open2(){

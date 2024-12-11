@@ -207,8 +207,10 @@ for line in stdin:
         if expression.count("\n") <= 1:
             try:
                 result = eval(expression, global_namespace)
-                if type(result) == bool and result:
-                    print(raw_line)
+                if type(result) == bool:
+                    if result:
+                        print(raw_line)
+                
                 elif printif:
                     prnt = result[0]
                     res =result[1:]

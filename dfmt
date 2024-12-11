@@ -118,7 +118,9 @@ function getAlias(){
         creat) echo "CreatedAt" ;;
         creats) echo "CreatedSince" ;;
         size) echo "Size" ;;
+        sz) echo "Size" ;;
         ssize) echo "SharedSize" ;;
+        nm) echo "Name" ;;
         lv) echo "LocalVolumes" ;;
         mnt) echo "Mounts" ;;
         scope) echo "IPv6Scope" ;;
