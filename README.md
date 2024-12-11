@@ -76,15 +76,15 @@ This will create `first.java` that imports java.util.Scanner, java.util.List, an
 ### dfmt
 Suppose you want to see specific aspects of docker images such as thier id, Repository, Size, Containers, and SharedSize.  Normally, you would need to run something along the lines of :
 ```bash
-docker imsage ls -a --format "table {{.ID}}\t{{.Repository}}\t{{.Size}}\t{{.Containers}}\t{{.SharedSize}}"
+docker image ls -a --format "table {{.ID}}\t{{.Repository}}\t{{.Size}}\t{{.Containers}}\t{{.SharedSize}}"
 ```
 dfmt or docker-format helps allieviate this problem by compressing the table description into a function with numerious aliases.  The above command would then simplify to:
 ```bash
-docker container ls -a --format "table $(dfmt i repo sz cont ssize)" 
+docker image ls -a --format "table $(dfmt i repo sz cont ssize)" 
 ```
 or without using the aliases:
 ```bash
-docker container ls -a --format "table $(dfmt i repository size containers sharedSize)" 
+docker image ls -a --format "table $(dfmt i repository size containers sharedSize)" 
 ```
 
 ### pawk
