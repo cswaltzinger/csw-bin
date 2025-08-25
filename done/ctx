@@ -5,12 +5,8 @@
 
 
 #config and store context
-CONTEXT_RC=$HOME/.ctxrc
-CONTEXT_BIN=$(dirname $(which ctx))
+CONTEXT_RC=/Users/csw/dev/server-files/info/ctxrc
 
-if [[ ! -e "$CONTEXT_RC" ]];then
-    touch $CONTEXT_RC
-fi
 
 
 
@@ -25,15 +21,18 @@ DEFAULT_PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$'
     #
 
 #mode change for quick debug/editing 
-MODE="DEPLOY"
+MODE="DEBUG"
 
 
 #debug echo to be used instead of echo 
-decho(){
+echo(){
     if [[ "$MODE" == "DEBUG" ]];then
-        echo $@
-        echo ""
+        command echo $@
     fi
+}
+
+decho(){
+    echo $@
 }
 
 # show current context and list all contexts
@@ -63,7 +62,7 @@ show(){
     if [[ "$PS1" =~ "|" ]];then 
         #reset ps1
         export PS1="$CONDA_PROMPT_MODIFIER$DEFAULT_PS1"
-    else
+    elsed
         #add to ps1
         export PS1="$CONDA_PROMPT_MODIFIER|$CURRENT_CTX|$DEFAULT_PS1"
     fi

@@ -6,7 +6,7 @@
 if [[ "$1" == "--docker" ]]; then
     shift 
     DARGS=""
-    while [[ "$1" = *"-"* ]]; do
+    while [[ "$1" = "-"* ]]; do
         DARGS="$DARGS $1 $2"
         shift
         shift 
@@ -16,8 +16,6 @@ if [[ "$1" == "--docker" ]]; then
 
     docker run -it --rm -v $(pwd):/app -w /app $DARGS $DIMAGE $@
 
-
-
     exit 0
 fi
 
@@ -26,14 +24,14 @@ fi
 NAME=$1
 if [[ -e "/Applications/$NAME" || -e "/Applications/$NAME.app" ]]; then
     shift
-    open -a $NAME $@
+    open -a "$NAME" "$@"
     exit 0
 fi
 NAME="$1 $2"
 if [[ -e "/Applications/$NAME" || -e "/Applications/$NAME.app" ]]; then
     shift
     shift
-    open -a "$NAME" $@
+    open -a "$NAME" "$@"
     exit 0
 fi
 NAME="$1 $2 $3"
@@ -41,7 +39,7 @@ if [[ -e "/Applications/$NAME" || -e "/Applications/$NAME.app" ]]; then
     shift
     shift
     shift
-    open -a "$NAME" $@
+    open -a "$NAME" "$@"
     exit 0
 fi
 

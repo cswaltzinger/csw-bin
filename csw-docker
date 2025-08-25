@@ -1,0 +1,77 @@
+#!/bin/bash
+convRegex(){
+    TOECHO="$1"
+    shift
+    for i in $@;do
+        if [ "$1" ];then
+            TOECHO="$TOECHO|$i"
+        fi
+    done
+    echo -n "$TOECHO"
+}
+
+
+IMAGES=$(convRegex $(data get docker hidden-images))
+VOLUMES=$(convRegex $(data get docker hidden-volumes))
+NETWORKS=$(convRegex $(data get docker hidden-networks))
+
+# echo "[$IMAGES]"
+# echo "[$VOLUMES]"
+# echo "[$NETWORKS]"
+# echo "-----"
+GREP_FLAG="-v"
+
+image(){
+    docker image $@ | grep $GREP_FLAG "$IMAGES"
+}
+images(){
+    docker image ls $@ | grep $GREP_FLAG "$IMAGES"
+}
+
+
+volume(){
+    docker volume $@ | grep $GREP_FLAG "$VOLUMES"
+}
+volumes(){
+    docker volume ls $@ | grep $GREP_FLAG "$VOLUMES"
+}
+
+
+network(){
+    docker network $@ | grep $GREP_FLAG "$NETWORKS"
+}
+networks(){
+    docker network ls $@ | grep $GREP_FLAG "$NETWORKS"
+}
+
+im(){
+    image $@
+}
+
+vol(){
+    volume $@
+}
+net(){
+    network $@
+}
+--rev(){
+    GREP_FLAG=""
+    $@
+}
+
+# docker $@
+# exit $?
+CSW_DOCKER="true"
+ALIASES="images volume network --reverse"
+if [ "$CSW_DOCKER" ];then
+
+    if [[ "$ALIASES" =~ "$1" ]]; then
+        $@
+    else
+        docker $@
+    fi
+    
+fi
+
+
+

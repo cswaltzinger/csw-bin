@@ -1,0 +1,85 @@
+#!/bin/bash
+# CSW_DATA_PREFIX=docker
+# MODE=dev
+echo(){
+    if [ "$MODE" == "dev" ]; then
+        command echo "$@"
+    fi
+}
+
+if [ -z "$CSW_DATA_PREFIX" ]; then
+    LOCATION="csw.server/.ls/info"
+else
+    LOCATION="csw.server/.ls/info/$CSW_DATA_PREFIX"
+fi
+
+jq(){
+    /Users/csw/.config/anaconda3/bin/jq "$@"
+}
+getPath(){
+    TOECHO="$1"
+    shift 
+    for i in $@;do
+        if [ "$1" ];then
+            TOECHO="$TOECHO/$i"
+        fi
+    done
+    printf "$TOECHO"
+}
+
+getInfo(){
+    echo "getInfo: $@"
+    PTH=$(getPath $@)
+    
+    command curl -sfL $LOCATION/$PTH 2> /dev/null ||
+    command curl -sfLv $LOCATION/a/$PTH 2> /dev/null 
+    
+}
+setInfo(){
+    DATA_LOC=/Users/csw/dev/server-files/info
+    loc="$DATA_LOC/$1"
+    shift
+    body="$@"
+    if [ -z "$body" ]; then
+        body=$(< /dev/stdin)
+    fi
+    if [ ! -f "$loc" ]; then
+       loc="$DATA_LOC/a/$1"
+        if [ ! -f "$loc" ]; then
+            loc="$DATA_LOC/$1"
+           
+        fi
+    fi
+    echo "$body" > "$loc"
+
+    # command curl -sfL -X POST $LOCATION/$loc -d "$body" 2> /dev/null 
+
+}
+
+
+case "$1" in
+    -g|--get|get)
+        echo "get"
+        shift
+        getInfo "$@"
+        ;;
+    -s|--set|set)
+        shift 
+        setInfo "$@"
+
+        ;;
+    -d|--delete|delete|del)
+        shift 
+        rm "$@"
+
+        ;;
+    "")
+        getInfo "" | jq -r '.[].name'
+        ;;
+
+    *)
+        getInfo "$@"
+        ;;
+esac
+
+

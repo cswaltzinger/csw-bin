@@ -1,10 +1,5 @@
 {MODULES}
-const p = console.log
-
-function main(){
 
 
-    
 
-}
-main()
+

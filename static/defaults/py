@@ -11,4 +11,12 @@ class JSObject:
             return object.__getattribute__(self, key)
         except :
             return None
+        
+
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()
 

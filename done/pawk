@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #exexutionor for pawk, a python awk like tool
 new_args=""
 for arg in "$@"; do
@@ -8,5 +9,6 @@ for arg in "$@"; do
         new_args="'$arg'"
     fi
 done
+#clear
 eval "python3 $(dirname $(which pawk))/static/pawk.py $new_args"
 

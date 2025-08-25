@@ -1,0 +1,4 @@
+#!/bin/bash
+# GEMINI_API_KEY=AIzaSyCiQ_abnE2l1Qs0s0nHKp_j7YNlZKjatI0 
+
+$(dirname $(command which ai ))/static/ai.py "$@" 2> /dev/null

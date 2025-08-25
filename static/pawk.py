@@ -86,6 +86,8 @@ cl_args_desc={
     } for key in cl_desc
 }
 
+# print(args)
+# exit(0)
 if len(args) == 1 or "-h" in args or "--help" in args or "help" in args: 
     if len(args) == 1:
         intro = ["fields","delimiter","regex","top"]
@@ -199,7 +201,9 @@ for line in stdin:
     global_namespace["inp"] = raw_line 
     global_namespace["index"] = index 
     global_namespace["args"] = args 
-    index+=1 
+
+
+    
 
     try:
         # Evaluate the expression using the globals of the calling process
@@ -237,6 +241,7 @@ for line in stdin:
         # for i in range(len(exp)):
         #     print(i+1, exp[i])
         # print("\n")
+    index+=1 
 
 
 

@@ -2,6 +2,7 @@
 #creates and adds predefined files to the current directory/project with modules and imports
 
 DEFAULT_DIR="$(dirname $(which add))/static/defaults"
+
 FILES="$(ls $DEFAULT_DIR/*)"
 OLD_LANG=""
 LANG=""
@@ -9,31 +10,9 @@ OUTPUT=""
 MODULES=""
 NEW_MODULES=""
 
-MODULE_ALIAS='
-java-arr java.util.ArrayList
-java-hm java.util.HashMap
-java-hs java.util.HashSet
-java-ll java.util.LinkedList
-java-lst java.util.List
-java-list java.util.List
-java-mp java.util.Map
-java-scn java.util.Scanner
-java-f java.io.File
-java-d java.util.Date
-java-df java.text.SimpleDateFormat
-java-r java.util.Random
-java-m java.lang.Math
-java-ex java.lang.Exception
-py-ran random
-py-dt datetime
-py-js json
-py-re re
-py-sub subprocess
-py-ym yaml
-py-m math
-py-mp matplotlib
-py-plt matplotlib.pyplot as plt
-'
+MODULE_ALIAS=$(data get add.modalias)
+
+
 
 transposeModule(){
     local LANG=$1

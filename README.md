@@ -69,7 +69,8 @@ Suppose you want to make several java classes that share mostly the same importe
 
 With `add` it can be as simple as the following program:
 ```bash
-add --modules 'scn list r' first.java -m='m ex arr hm' second.java
+add --modules 'scn list r' first.java \ 
+  -m='m ex arr hm' second.java
 ```
 This will create `first.java` that imports java.util.Scanner, java.util.List, and java.util.Random in addtion to `second.java` that imports java.util.Scanner, java.util.List, java.util.Random, java.lang.Math, java.lang.Exception, java.util.ArrayList, and java-hm java.util.HashMap.  
 

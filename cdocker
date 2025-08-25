@@ -1,0 +1,78 @@
+#!/bin/bash
+
+echo(){
+    #return 0
+    command echo $@
+}
+
+convRegex(){
+    TOECHO="$1"
+    shift
+    for i in $@;do
+        if [ "$1" ];then
+            TOECHO="$TOECHO|$i"
+        fi
+    done
+    echo -n "$TOECHO"
+}
+
+
+IMAGES=$(convRegex $(data get docker hidden-images))
+VOLUMES=$(convRegex $(data get docker hidden-volumes))
+NETWORKS=$(convRegex $(data get docker hidden-networks))
+GREP_FLAG="-v"
+
+FILTERING_CMDS=""
+GLOBAL_FLAGS_WITH_VALUES="--config 
+-c, --context 
+-H, --host 
+-l, --log-level 
+--tlscacert  
+--tlscert  
+--tlskey"
+
+
+GLOBAL_FLAGS=""
+CONTEXT=""
+CONTEXT_ARGS=""
+CMD=""
+CMD_ARGS=""
+
+
+while [[ "$1" == -* ]] && (($# > 1));do
+    GLOBAL_FLAGS="$GLOBAL_FLAGS $1"
+    if [[ "$GLOBAL_FLAGS_WITH_VALUES" =~ $1 ]]; then
+        # If the flag has a value, we need to skip the next argument
+        GLOBAL_FLAGS="$GLOBAL_FLAGS $2"
+        shift 2
+    else 
+        shift 
+    fi
+done
+
+CONTEXT="$1"
+shift
+
+while [[ "$1" == -* ]] && (($# > 1));do
+    CONTEXT_ARGS="$CONTEXT_ARGS $1 $2"
+    shift 2
+done
+
+CMD="$1"
+shift
+CMD_ARGS="$@"
+if [[ "$CONTEXT" != "events" && "$CONTEXT" != "ps" && "$CONTEXT" == *s ]]; then
+    CONTEXT="${CONTEXT%s}"
+    CMD_ARGS="$CONTEXT_ARGS $CMD $CMD_ARGS"
+    CMD="ls"
+    CONTEXT_ARGS=""
+
+fi
+
+echo -e "docker \n\t G-flags: [$GLOBAL_FLAGS] 
+        \n\t ctx: [$CONTEXT] 
+        \n\t ctx-arg: [$CONTEXT_ARGS] 
+        \n\t cmd: [$CMD]
+        \n\t cmd-arg: [$CMD_ARGS] " # > /dev/null
+# echo docker $GLOBAL_FLAGS $CONTEXT $CONTEXT_ARGS $CMD $CMD_ARGS 
+
