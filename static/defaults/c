@@ -1,9 +1,0 @@
-#include <stdio.h>
-#include <stdlib.h>
-{MODULES}
-
-
-int main(int arglen, char * args[]) {
-    
-    return 0;
-}

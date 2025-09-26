@@ -4,7 +4,7 @@
 # use /usr/bin/sqlite3 for other vars 
 
 echo(){
-    if [ "$MODE" == "dev" ]; then
+    if [ "$MODE" = "dev" ]; then
         command echo "$@"
     fi
 }
