@@ -1,0 +1,110 @@
+#!/bin/bash
+
+addr(){
+    addrv4(){
+        curl -4 -s ifconfig.me
+        echo "" 
+    }
+    addrv6(){
+        curl -6 -s ifconfig.me
+        echo "" 
+    }
+    local_ip(){
+        ipconfig getifaddr en0
+    }
+    case "$1" in 
+        -4|--ipv4) 
+            addrv4
+            ;;
+        -6|--ipv6) 
+            addrv6
+            ;;
+        -v|--verbose|--both) 
+           addrv4
+           addrv6
+            ;;
+        -l|--local) 
+            local_ip
+            ;;
+        *) 
+              addrv4
+                ;;
+    esac
+}
+
+
+ip(){
+    echo -e "$(hostname)\t$(addr -l)\t$(addr)"
+    echo -e "\t $(addr -6)"
+}
+
+
+
+
+
+
+size(){
+    local RED=$(data get colors red)
+    local BLUE=$(data get colors blue)
+    local YELLOW=$(data get colors yellow)
+    local RESET=$(data get colors reset)
+    local depth=10
+    displayFunc=dl
+    showFileSize(){
+        dh(){
+            echo -e "$1"
+            echo -e "\t$2 B"
+            echo -e "\t$3 KB"
+            echo -e "\t$4 MB"
+            echo -e "\t$5 GB" 
+        }
+        dl(){
+            echo -e "$1\t$2 B\t$3 KB\t$4 MB\t$5 GB" 
+        }
+        eval "$(stat -s "$1" 2>/dev/null)"
+        size_kb=$((st_size / 1024))
+        size_mb=$((size_kb / 1024))
+        size_gb=$((size_mb / 1024))
+        eval "$displayFunc \"$1\" \"$st_size\" \"$size_kb\" \"$size_mb\" \"$size_gb\""
+        # eval "echo -e \"$1\n\t$st_size B\n\t$size_kb KB\n\t$size_mb MB\n\t$size_gb GB\" "
+    }
+    
+    for file in "$@";do 
+        case "$file" in 
+            -d|--depth)
+                depth="$2"
+                shift 
+                continue
+                ;;
+            -h|--human|-l|--list)
+                
+                if [ ! -f "$file" ];then
+                   displayFunc="$(echo $file | tr "-" "d")"
+                    continue
+                    
+                fi
+                
+                ;;
+            *)
+                
+                ;;
+        esac
+        # echo $file
+        if [ -f "$file" ];then
+            showFileSize "$file"
+        elif [ -d "$file" ];then
+            dsize=$(du -hsc "$file" | tail -n 1 | awk '{print $1}')
+            echo -e "$BLUE$file$RESET\t$dsize"
+        fi
+    done
+}
+
+
+
+
+if [  "$#" = "0" ];then
+    loc=$(realpath $0)
+    cat $loc |grep -v loc | pawk '"(){" in inp' | pawk 'inp.replace("(){","")' 
+else
+    $@
+fi

@@ -1,6 +1,8 @@
 #!/bin/bash
 # CSW_DATA_PREFIX=docker
 # MODE=dev
+# use /usr/bin/sqlite3 for other vars 
+
 echo(){
     if [ "$MODE" == "dev" ]; then
         command echo "$@"
