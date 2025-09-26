@@ -1,0 +1,27 @@
+#!/bin/bash
+
+
+
+
+
+
+env(){
+    # printenv
+    # return 
+    local ENV_GREP="$(data get envfilter|tr '\n' '|')OTHER"
+    # echo $ENV_GREP
+
+    all(){
+        printenv 
+    }
+
+    if [ -z "$@" ];then 
+        printenv | grep -vE "$ENV_GREP"
+    else 
+        $@
+    fi 
+}
+
+
+
+$@
