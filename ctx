@@ -1,11 +1,14 @@
 #!/bin/bash
 
 
+
+
+
 # adds context functionality through the util function similar to a conda env 
-
-
-#config and store context
-CONTEXT_RC=/Users/csw/dev/server-files/info/ctxrc
+CONTEXT_HOME="${HOME:-~}/.config/csw-ctx"
+if [ ! -d "$CONTEXT_HOME" ]; then
+    mkdir -p "$CONTEXT_HOME" "$CONTEXT_HOME/bin" "$CONTEXT_HOME/contexts"
+fi
 
 
 
@@ -37,196 +40,88 @@ decho(){
 
 # show current context and list all contexts
 list(){
-    echo "($CURRENT_CTX)"
-    cat $CONTEXT_RC
-    echo ""
+    ls $CONTEXT_HOME/contexts
 }
 
 
 # reset context functionality 
 reset(){
-    decho reset context to base 
-    echo "" > $CONTEXT_RC
-    CURRENT_CTX="" 
-    if [ -f "$CONTEXT_BIN/util" ];then
-        rm $CONTEXT_BIN/util
-    fi
-    if [[ "$PS1" =~ "$CURRENT_CTX" ]];then 
-        show
-    fi
+    rm -rf $CONTEXT_HOME/contexts/*
 }
-
-
-# toggle context on/off in PS1 
-show(){
-    if [[ "$PS1" =~ "|" ]];then 
-        #reset ps1
-        export PS1="$CONDA_PROMPT_MODIFIER$DEFAULT_PS1"
-    else
-        #add to ps1
-        export PS1="$CONDA_PROMPT_MODIFIER|$CURRENT_CTX|$DEFAULT_PS1"
-    fi
-
-}
-
 
 
 # add context path to the context file
 add(){
-    REAL_PATH=$(realpath $(pwd))
-    CTX_NAME=$(basename $REAL_PATH)
-    CTX_FILE=$(echo $REAL_PATH)
-    if [[ -z "$@" ]];then 
-        if [[ -f "$CTX_FILE/util" ]];then
-            CTX_FILE="$CTX_FILE/util"
-        elif [[ -f "$CTX_FILE/.util" ]];then
-            CTX_FILE="$CTX_FILE/.util"
-        else
-            CTX_FILE=""
-        fi
-        
-    else
-        CTX_FILE="$CTX_FILE/$@"
-    fi
-    if [[ -z "$CTX_FILE" || ! -f "$CTX_FILE" ]];then
-        echo "context file not found"
-        return 1
+    REAL_PATH=$(pwd)
+    CTX_NAME=$(basename $(pwd))
+    CTX_FILE="$REAL_PATH/util"
+    if [ ! -f "$CTX_FILE" ];then
+        CTX_FILE="$REAL_PATH/.util"
     fi
 
-    #add context to the .ctxrc file
-    echo $CTX_NAME $CTX_FILE >> $CONTEXT_RC
+    CTX_PATH="$CONTEXT_HOME/contexts/$CTX_NAME"
+    mkdir -p "$CTX_PATH"
+    ln -s "$CTX_FILE" "$CTX_PATH/util"
+
+
+    if [ ! -f "$CTX_FILE" ];then
+        echo -e '#!/bin/bash\n\n\n' > "$CTX_FILE"
+        vim "$CTX_FILE"
+    fi
 }
 
 
 #change current contexts 
 change(){
-    echo change context to $@
     if [[ -z "$@" ]];then
-        echo "context not found"
+        ls $CONTEXT_HOME/contexts
         return 1
     fi
-    #find first line with context name contained 
-    CONTEXTS=$(cat $CONTEXT_RC | grep $@|head -n 1)
-    if [[ -z "$CONTEXTS" ]];then
-        echo "context not found"
-        return 1
-    fi
-
-    function exportContext(){
-        FILE=$2
-        export CURRENT_CTX=$1
-        ln -s $(realpath $FILE) $CONTEXT_BIN/util
-    }
-
-    #remove old context if exists 
-    if [[ -f "$CONTEXT_BIN/util" ]];then
-        rm $CONTEXT_BIN/util
-    fi
-    eval "exportContext $CONTEXTS"
-
-    #show context in PS1 by reseting it 
-    show 
-    show
-
+    CONTEXT="$1"
+    ln -sf "$CONTEXT_HOME/contexts/$CONTEXT" "$CONTEXT_HOME/current"
 }
 
-
-#rename context or path
-#this can also be done in the .ctxrc file by modifying the context name or path
-rename(){
-    
-    if [[ -z "$@" ]];then
-        echo "provide context or path to rename"
-        return 1
-    fi
-    CONTEXT=$(cat $CONTEXT_RC | grep $1 |head -n 1)
-    if [[ -z "$CONTEXT" ]];then
-        echo "context not found"
-        return 1
-    fi
-    if [[ -z "$2" ]];then
-        echo "provide an update"
-        return 1
-    fi
-
-    shift 
-    UPDATE="$@"
-    OLD_NAME=$(echo $CONTEXT | awk '{print $1}')
-    OLD_PATH=$(echo $CONTEXT | awk '{print $2}')
-
-    NEW_NAME="$OLD_NAME"
-    NEW_PATH="$OLD_PATH"
-    if [[ -f "$UPDATE" ]];then
-        UPDATE=$(realpath "$UPDATE")
-        NEW_PATH="$UPDATE"
-        NEW_CONTEXT="$OLD_NAME $UPDATE"
-    else
-        NEW_NAME="$UPDATE"
-        NEW_CONTEXT="$UPDATE $OLD_PATH"
-    fi
-
-
-
-    NEW_CONTEXT_RC=$(cat $CONTEXT_RC | grep -v "$OLD_NAME")
-
-    # echo "$NEW_CONTEXT_RC" 
-    echo "$NEW_CONTEXT_RC" > $CONTEXT_RC
-    echo "$NEW_CONTEXT" >> $CONTEXT_RC
-    # cat $CONTEXT_RC
-    
-    if [[ "$CURRENT_CTX" == "$OLD_NAME" ]];then
-        CURRENT_CTX="$NEW_NAME"
-    fi
-    #show context in PS1 by reseting it 
-    show 
-    show
-}
 
 
 #deactivate current context
 deactivate(){
-
-    if [[ "$PS1" =~ "$CURRENT_CTX" ]];then 
-        show
-    fi
-    CURRENT_CTX="" 
-    if [ -f "$CONTEXT_BIN/util" ];then
-        rm $CONTEXT_BIN/util
+    ln -sf "$CONTEXT_HOME/bin" "$CONTEXT_HOME/current"
+    if [ -f "$CONTEXT_HOME/PS1" ];then
+        export PS1=$(cat $CONTEXT_HOME/PS1)
+        rm $CONTEXT_HOME/PS1
     fi
 }
 
-#main wrapper function 
-main(){
-    if [[ -z "$@" ]];then
-        change $(realpath .) && show
-    # elif [[ "." =~ "$1" ]]; then
-    #     shift
-    #     add $(realpath .)
-    elif [[ "show --show -s" =~ "$1" ]]; then
-        shift
-        show $@
-    elif [[ "reset --reset -r" =~ "$1" ]]; then
-        shift
-        reset $@
-    elif [[ "rename --rename" =~ "$1" ]]; then
-        shift
-        rename $@
-    elif [[ "list ls --list -l" =~ "$1" ]]; then
-        shift
-        list $@
-    elif [[ "add --add -a" =~ "$1" ]]; then
-        shift
-        add $@
-    elif [[ "change --change -c" =~ "$1" ]]; then
-        shift
-        change $@
-    elif [[ "deactivate" =~ "$1" ]]; then
-        deactivate $@
-    else 
-        echo base change command comming 
+show(){
+    echo ps1 to be implemented 
+}
+
+activate(){
+
+    if [ -f "$CONTEXT_HOME/current/util" ];then
+        echo $PS1 > $CONTEXT_HOME/PS1
+        # source "$CONTEXT_HOME/current/util"
+        export PS1="($(basename $(realpath $CONTEXT_HOME/current ))) $PS1"
     fi
 }
 
-main $@
+
+__backend(){
+    cd $CONTEXT_HOME
+    ls -l $CONTEXT_HOME
+}
+
+run(){
+    THE_FILE=$(realpath $CONTEXT_HOME/current/util)
+    bash <(cat $THE_FILE ; echo "$@")
+
+}
+
+
+cmds(){
+    cat "$CONTEXT_HOME/current/util" | grep -E '^[a-zA-Z0-9_]+\(\)\{' | sed 's/(){//' | sed 's/ //g'
+}
+
+$@
 
 
