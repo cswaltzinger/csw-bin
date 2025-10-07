@@ -14,7 +14,9 @@ decho(){
 
 
 # 2. Define the absolute path to the SQLite database file
-DB_FILE="$XDG_CONFIG_HOME/csw-db.sqlite"
+DB_FILE="${XDG_CONFIG_HOME:- ~/.config}/csw-db.sqlite"
+
+
 
 # 3. Define the SQLite executable path
 SQLITE_BIN="/usr/bin/sqlite3"
@@ -61,6 +63,10 @@ init() {
         echo "Error: Database initialization failed." >&2
         return 1
     fi
+}
+
+__initFromLocal(){
+    echo to be done     
 }
 
 # Function 2: Gets the value of an item
@@ -184,7 +190,6 @@ deleteInfo() {
 
 
 case "$1" in
-
     -i|--init|init)
         init
         ;;

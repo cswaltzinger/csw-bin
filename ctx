@@ -62,7 +62,7 @@ show(){
     if [[ "$PS1" =~ "|" ]];then 
         #reset ps1
         export PS1="$CONDA_PROMPT_MODIFIER$DEFAULT_PS1"
-    elsed
+    else
         #add to ps1
         export PS1="$CONDA_PROMPT_MODIFIER|$CURRENT_CTX|$DEFAULT_PS1"
     fi

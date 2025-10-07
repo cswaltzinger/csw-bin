@@ -1,0 +1,15 @@
+#!/bin/bash
+
+USER_HOME="${HOME:-~}"
+
+if [ -f "$USER_HOME/bin/$1" ]; then 
+    CMD="$USER_HOME/bin/$1"
+    shift 
+    $CMD "$@"
+elif [ -f "$USER_HOME/bin/test/$1" ]; then
+     CMD="$USER_HOME/bin/test/$1"
+     shift 
+     $CMD "$@"
+else 
+    echo "bin: $1: no such command"
+fi
